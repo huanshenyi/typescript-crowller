@@ -1,10 +1,21 @@
 // ts ->.d.ts(翻訳ファイア) -> js
 import superagent from "superagent";
 import cheerio from "cheerio"
+import fs from "fs"
+import path from "path"
 
 interface Course {
     title: string, 
     count: number
+}
+
+interface CourseResult {
+    data: Course[],
+    time: number
+}
+
+interface Content {
+    [propName:number]: Course[];
 }
 
 class Crowller {
@@ -21,7 +32,7 @@ class Crowller {
           const count:number = parseInt(desc.eq(1).text().split("：")[1], 10)
           courseInfos.push({title, count})
       });
-      const result = {
+      return {
           time:(new Date()).getTime(),
           data :courseInfos
       };
@@ -29,10 +40,29 @@ class Crowller {
 
     async getRawHtml(){
        const result = await superagent.get(this.url);
-       this.getCourseInfo(result.text);
+       return result.text
     }
+
+    generateJsonContent(courseInfo:CourseResult) {
+        const filePath = path.resolve(__dirname, '../data/course.json');
+        let fileContent: Content = {};
+        if(fs.existsSync(filePath)){
+           fileContent = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        }
+        fileContent[courseInfo.time] = courseInfo.data
+        return fileContent;
+    }
+
+    async initSpiderProcess(){
+        const filePath = path.resolve(__dirname, '../data/course.json');
+        const html = await this.getRawHtml();
+        const courseInfo = this.getCourseInfo(html)
+        const fileContent = this.generateJsonContent(courseInfo)
+        fs.writeFileSync(filePath, JSON.stringify(fileContent))
+    }
+
     constructor() {
-        this.getRawHtml();
+        this.initSpiderProcess();
     }
 }
 
