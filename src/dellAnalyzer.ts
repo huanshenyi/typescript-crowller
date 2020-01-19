@@ -18,6 +18,16 @@ interface Content {
 }
 
 export default class Dellanalyzer implements Analyze {
+    
+    private static instance:Dellanalyzer;
+
+    static getInstance(){
+        if(!Dellanalyzer.instance){
+            Dellanalyzer.instance = new Dellanalyzer()
+        }
+        return Dellanalyzer.instance
+    }
+
     private getCourseInfo(html:string){
         const $ = cheerio.load(html)
         const courseItems = $(".course-item");
@@ -34,7 +44,7 @@ export default class Dellanalyzer implements Analyze {
         };
       }
 
-      generateJsonContent(courseInfo:CourseResult, filePath:string) {
+      private generateJsonContent(courseInfo:CourseResult, filePath:string) {
         let fileContent: Content = {};
         if(fs.existsSync(filePath)){
            fileContent = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
@@ -47,5 +57,9 @@ export default class Dellanalyzer implements Analyze {
           const courseInfo = this.getCourseInfo(html)
           const fileContent = this.generateJsonContent(courseInfo, filePath)
           return JSON.stringify(fileContent)        
+      }
+
+      private constructor() {
+         
       }
 }
