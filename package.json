@@ -4,19 +4,29 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node ./src/crowller.ts"
+    "dev:build": "tsc -w",
+    "dev:start": "nodemon node ./build/crowller.js",
+    "dev": "concurrently npm:dev:*"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "data/*"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/superagent": "^4.1.4",
+    "concurrently": "^5.0.2",
+    "nodemod": "^2.3.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.7.5"
   },
   "dependencies": {
     "@types/cheerio": "^0.22.15",
     "cheerio": "^1.0.0-rc.3",
+    "nodemon": "^2.0.2",
     "superagent": "^5.2.1"
   }
 }
