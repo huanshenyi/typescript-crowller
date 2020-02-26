@@ -50,3 +50,10 @@ npm install concurrently -D
     "dev": "concurrently npm:dev:*"
   },
 ```
+# typescriptでexpressの使用関連
+
+req.bodyからデータ取れるために
+```
+npm install body-parser --save
+```
+ドキュメント: https://github.com/expressjs/body-parser
