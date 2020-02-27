@@ -13,16 +13,32 @@ router.get('/', (req:Request, res:Response) => {
     res.send(`
     <html>
       <body>
-        <form method="post" action="/getData">
+        <form method="post" action="/login">
           <input type="password" name="password" />
-          <button>提出</button>
+          <button>ログイン</button>
         </form>
       </body>
     </html>
     `)
  })
  
- router.post('/getData', (req:RequestWithBody, res:Response)=>{
+router.post('/login', (req:RequestWithBody, res:Response) => {
+  const {password} = req.body;
+  const isLogin = req.session ? req.session.login : false;
+
+  if(isLogin) {
+    res.send('logined')
+  }else {
+    if(password === "123" && req.session){
+        req.session.login = true;
+        res.send('login seccess')
+    }else{
+       res.send('login fail')
+    }
+  }
+})
+
+router.post('/getData', (req:RequestWithBody, res:Response)=>{
     const {password} = req.body;
     if(req.body.password === '123'){
         const { password } = req.body 
@@ -32,8 +48,8 @@ router.get('/', (req:Request, res:Response) => {
         new Crowller(url, analyzer);
         res.send('getData Success!')
     }else {
-        res.send(`${req.teacherName} password Error`)
+        res.send(`password Error`)
     }
- })
+})
 
  export default router;

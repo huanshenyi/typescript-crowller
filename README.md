@@ -57,3 +57,20 @@ req.bodyからデータ取れるために
 npm install body-parser --save
 ```
 ドキュメント: https://github.com/expressjs/body-parser
+## データ保存
+```
+npm install cookie-session --save
+```
+
+
+#生産環境関連
+
+PM2
+インストール
+```
+npm install pm2 -g
+```
+
+```javascript
+"prd": "cross-env NODE_ENV=production pm2 start app.js"
+```
