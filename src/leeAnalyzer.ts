@@ -1,4 +1,4 @@
-import { Analyze } from "./crowller"
+import { Analyze } from "./utils/crowller"
 
 
 export default class LeeAnalyzer implements Analyze {

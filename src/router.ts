@@ -1,17 +1,27 @@
-import {Router, Request, Response} from "express";
-import Crowller from './crowller'
-import DellAnalyzer from "./dellAnalyzer"
 import fs from "fs"
 import path from "path"
 
-interface RequestWithBody extends Request{
-  body: {
-    [key:string]:string | undefined;
+import {Router, Request, Response, NextFunction} from "express";
+import Crowller from './utils/crowller'
+import DellAnalyzer from "./utils/analyzer"
+import { getResponseData } from "./utils/util";
+
+
+interface BodyRequest extends Request{
+  body: {[key:string]:string | undefined};
+}
+
+const checkLogin = (req:Request, res:Response, next:NextFunction) => {
+  const isLogin = req.session ? req.session.login : false;
+  if(isLogin) {
+      next();
+  }else {
+    res.json(getResponseData(null, 'まずログインしてね'))
   }
 }
 
 const router = Router();
-router.get('/', (req:Request, res:Response) => {
+router.get('/', (req:BodyRequest, res:Response) => {
     const isLogin = req.session ? req.session.login : false;
     if (isLogin){
        res.send(`
@@ -38,55 +48,45 @@ router.get('/', (req:Request, res:Response) => {
     }
  })
 
-router.get('/logout', (req:RequestWithBody, res:Response)=>{
+router.get('/logout', (req:BodyRequest, res:Response)=>{
    if(req.session){
     req.session.login = undefined;
    }
    res.redirect('/');
 }) 
 
-router.post('/login', (req:RequestWithBody, res:Response) => {
+router.post('/login', (req:BodyRequest, res:Response) => {
   const {password} = req.body;
   const isLogin = req.session ? req.session.login : false;
   if(isLogin) {
-    res.send('logined')
+      res.send(getResponseData(false, 'ログインしてます'))
   }else {
     if(password === "123" && req.session){
         req.session.login = true;
-        res.send('login seccess')
+        res.json(getResponseData("ログインしました"))
     }else{
-       res.send('login fail')
+      res.json(getResponseData("ログイン失敗"))
     }
   }
 })
 
-router.get('/getData', (req:RequestWithBody, res:Response)=>{
+router.get('/getData', checkLogin, (req:BodyRequest, res:Response)=>{
     const isLogin = req.session ? req.session.login : false;
-    if(isLogin){ 
-        const secret = "secretKey";
-        const url = `http://www.dell-lee.com/typescript/demo.html?secret=${secret}`;
-        const analyzer = DellAnalyzer.getInstance();
-        new Crowller(url, analyzer);
-        res.send('getData Success!')
-    }else {
-        res.redirect('/login')
-    }
+    const secret = "secretKey";
+    const url = `http://www.dell-lee.com/typescript/demo.html?secret=${secret}`;
+    const analyzer = DellAnalyzer.getInstance();
+    new Crowller(url, analyzer);
+    res.json(getResponseData('getData Success!'))
 })
 
-router.get("/showData", (req:RequestWithBody, res:Response) => {
-  const isLogin = req.session ? req.session.login : false;
-  if(isLogin){
+router.get("/showData", checkLogin, (req:BodyRequest, res:Response) => {
     try{
       const position = path.resolve(__dirname, "../data/course.json");
       const result = fs.readFileSync(position, "utf-8");
-      res.json(JSON.parse(result));
+      res.json(getResponseData(JSON.parse(result)));
     }catch(e){
-       res.send("また内容ありません")
+       res.json(getResponseData(false, "またデータありません"))
     }
-  }else{
-    res.redirect("/");
-  }
-
 })
 
- export default router;
+export default router;
